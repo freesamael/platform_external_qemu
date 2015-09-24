@@ -3227,6 +3227,35 @@ amodem_addTimeUpdate( AModem  modem )
              tzname );
 }
 
+/**
+ * tz is in number of quarter-hours
+ */
+void
+amodem_set_timezone( AModem modem, int tz )
+{
+    time_t       utc_now = time(NULL);
+    time_t       local_now = utc_now + tz * 15 * 60;
+    struct tm    utc, local;
+
+    utc   = *gmtime( &utc_now );
+    local = *gmtime( &local_now );
+
+    amodem_begin_line( modem );
+
+   /* as a special extension, we append the name of the host's time zone to the
+    * string returned with %CTZ. the system should contain special code to detect
+    * and deal with this case (since it normally relied on the operator's country code
+    * which is hard to simulate on a general-purpose computer
+    */
+    amodem_add_line( modem, "%%CTZV: %02d/%02d/%02d:%02d:%02d:%02d%c%d:%d:%s\r\n",
+             (utc.tm_year + 1900) % 100, utc.tm_mon + 1, utc.tm_mday,
+             utc.tm_hour, utc.tm_min, utc.tm_sec,
+             (tz >= 0) ? '+' : '-', (tz >= 0) ? tz : -tz,
+             (local.tm_isdst > 0),
+             "Unknown/Unknown" );
+    amodem_end_line_reply( modem );
+}
+
 static void
 handleEndOfInit( const char*  cmd, AModem  modem )
 {

@@ -150,6 +150,8 @@ extern AModemTech          amodem_get_technology( AModem modem );
 extern AModemPreferredMask amodem_get_preferred_mask( AModem modem );
 extern int                 amodem_set_technology( AModem modem, AModemTech technology, AModemPreferredMask preferredMask );
 
+extern void                amodem_set_timezone( AModem modem, int tz );
+
 /** OPERATOR TYPES
  **/
 typedef enum {

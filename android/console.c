@@ -1818,6 +1818,19 @@ do_gsm_report( ControlClient  client, char*  args )
 }
 
 static int
+do_gsm_timezone( ControlClient  client, char  *args)
+{
+    if (!args) {
+        control_write( client, "KO: missing argument, try 'gsm timezone <+/-tz>'\r\n" );
+        return -1;
+    }
+
+    int tz = atoi(args);
+    amodem_set_timezone(client->modem, tz);
+    control_write(client, "OK\r\n");
+}
+
+static int
 do_gsm_enable_disable( ControlClient  client, char  *args, bool enable )
 {
     if (strcmp( args, "hold" ) == 0)
@@ -1953,6 +1966,10 @@ static const CommandDefRec  gsm_commands[] =
     "'gsm report'      report all known fields\r\n"
     "'gsm report creg' report CREG field\r\n",
     NULL, do_gsm_report, NULL},
+
+    { "timezone", "change timezone",
+    "'gsm timezone <+/-tz>' change timezone to tz in number of quarter-hours.\r\n",
+    NULL, do_gsm_timezone, NULL},
 
     { "enable", "enable selected modem feature",
     "'gsm enable hold' enable the hold feature\r\n",
