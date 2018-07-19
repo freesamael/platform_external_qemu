@@ -451,6 +451,7 @@ QEMU2_COMMON_SOURCES += \
     hw/core/sysbus.c \
     hw/display/framebuffer.c \
     hw/display/goldfish_fb.c \
+    hw/display/goldfish_fbext.c \
     hw/display/vga-pci.c \
     hw/i2c/core.c \
     hw/i2c/smbus.c \
