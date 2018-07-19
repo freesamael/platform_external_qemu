@@ -1236,6 +1236,11 @@ static void build_goldfish_aml(Aml *table)
                               GOLDFISH_ROTARY_IOMEM_SIZE,
                               GOLDFISH_ROTARY_IRQ);
 
+    build_goldfish_device_aml(scope, "GFFE", "GFSH0009", "goldfish external display framebuffer",
+                              GOLDFISH_FBEXT_IOMEM_BASE,
+                              GOLDFISH_FBEXT_IOMEM_SIZE,
+                              GOLDFISH_FBEXT_IRQ);
+
     build_android_dt_aml(scope, "ANDT", "ANDR0001", "android device tree");
     aml_append(table, scope);
 }

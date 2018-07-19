@@ -24,14 +24,12 @@
 static int s_use_host_gpu = 0;
 static int s_display_bpp = 32;
 
-void goldfish_fb_set_use_host_gpu(int enabled) {
+void goldfish_fbext_set_use_host_gpu(int enabled) {
     s_use_host_gpu = enabled;
-    goldfish_fbext_set_use_host_gpu(enabled);
 }
 
-void goldfish_fb_set_display_depth(int depth) {
+void goldfish_fbext_set_display_depth(int depth) {
     s_display_bpp = depth;
-    goldfish_fbext_set_display_depth(depth);
 }
 
 #define DEST_BITS 8
@@ -65,8 +63,8 @@ void goldfish_fb_set_display_depth(int depth) {
 #define SOURCE_BITS 32
 #include "goldfish_fb_template.h"
 
-#define TYPE_GOLDFISH_FB "goldfish_fb"
-#define GOLDFISH_FB(obj) OBJECT_CHECK(struct goldfish_fb_state, (obj), TYPE_GOLDFISH_FB)
+#define TYPE_GOLDFISH_FBEXT "goldfish_fbext"
+#define GOLDFISH_FBEXT(obj) OBJECT_CHECK(struct goldfish_fbext_state, (obj), TYPE_GOLDFISH_FBEXT)
 /* These values *must* match the platform definitions found under
  * <system/graphics.h>
  */
@@ -94,7 +92,7 @@ enum {
     FB_INT_BASE_UPDATE_DONE  = 1U << 1
 };
 
-struct goldfish_fb_state {
+struct goldfish_fbext_state {
     SysBusDevice parent;
 
     QemuConsole *con;
@@ -118,11 +116,11 @@ struct goldfish_fb_state {
 #define  GOLDFISH_FB_SAVE_VERSION  3
 
 /* Console hooks */
-void goldfish_fb_set_rotation(int rotation)
+void goldfish_fbext_set_rotation(int rotation)
 {
-    DeviceState *dev = qdev_find_recursive(sysbus_get_default(), TYPE_GOLDFISH_FB);
+    DeviceState *dev = qdev_find_recursive(sysbus_get_default(), TYPE_GOLDFISH_FBEXT);
     if (dev) {
-        struct goldfish_fb_state *s = GOLDFISH_FB(dev);
+        struct goldfish_fbext_state *s = GOLDFISH_FBEXT(dev);
         DisplaySurface *ds = qemu_console_surface(s->con);
         s->rotation = rotation;
         s->need_update = 1;
@@ -132,9 +130,9 @@ void goldfish_fb_set_rotation(int rotation)
     }
 }
 
-static void goldfish_fb_save(QEMUFile*  f, void*  opaque)
+static void goldfish_fbext_save(QEMUFile*  f, void*  opaque)
 {
-    struct goldfish_fb_state*  s = opaque;
+    struct goldfish_fbext_state*  s = opaque;
 
     DisplaySurface *ds = qemu_console_surface(s->con);
 
@@ -155,9 +153,9 @@ static void goldfish_fb_save(QEMUFile*  f, void*  opaque)
     qemu_put_be32(f, s->format);
 }
 
-static int  goldfish_fb_load(QEMUFile*  f, void*  opaque, int  version_id)
+static int  goldfish_fbext_load(QEMUFile*  f, void*  opaque, int  version_id)
 {
-    struct goldfish_fb_state*  s   = opaque;
+    struct goldfish_fbext_state*  s   = opaque;
     int                        ret = -1;
     int                        ds_w, ds_h, ds_pitch, ds_rot;
 
@@ -221,9 +219,9 @@ static int   stats_full_updates;
 static long  stats_total_full_updates;
 #endif
 
-static void goldfish_fb_update_display(void *opaque)
+static void goldfish_fbext_update_display(void *opaque)
 {
-    struct goldfish_fb_state *s = (struct goldfish_fb_state *)opaque;
+    struct goldfish_fbext_state *s = (struct goldfish_fbext_state *)opaque;
     DisplaySurface *ds = qemu_console_surface(s->con);
     int full_update = 0;
 
@@ -258,7 +256,7 @@ static void goldfish_fb_update_display(void *opaque)
         stats_total               += stats_counter;
         stats_total_full_updates  += stats_full_updates;
 
-        trace_goldfish_fb_update_stats(stats_full_updates*100.0/stats_counter,
+        trace_goldfish_fbext_update_stats(stats_full_updates*100.0/stats_counter,
                 stats_total_full_updates*100.0/stats_total );
 
         stats_counter      = 0;
@@ -324,7 +322,7 @@ static void goldfish_fb_update_display(void *opaque)
             case 24: fn = draw_line_16_24; break;
             case 32: fn = draw_line_16_32; break;
             default:
-                hw_error("goldfish_fb: bad dest color depth\n");
+                hw_error("goldfish_fbext: bad dest color depth\n");
                 return;
             }
             break;
@@ -337,12 +335,12 @@ static void goldfish_fb_update_display(void *opaque)
             case 24: fn = draw_line_32_24; break;
             case 32: fn = draw_line_32_32; break;
             default:
-                hw_error("goldfish_fb: bad dest color depth\n");
+                hw_error("goldfish_fbext: bad dest color depth\n");
                 return;
             }
             break;
         default:
-            hw_error("goldfish_fb: bad source color format\n");
+            hw_error("goldfish_fbext: bad source color format\n");
             return;
         }
 
@@ -369,27 +367,27 @@ static void goldfish_fb_update_display(void *opaque)
         if (s->rotation % 2) {
             /* In portrait mode we are drawing "sideways" so always
              * need to update the whole screen */
-            trace_goldfish_fb_update_display(0, dest_height, 0, dest_width);
+            trace_goldfish_fbext_update_display(0, dest_height, 0, dest_width);
             dpy_gfx_update(s->con, 0, 0, dest_width, dest_height);
 
         } else {
-            trace_goldfish_fb_update_display(ymin, ymax-ymin, 0, dest_width);
+            trace_goldfish_fbext_update_display(ymin, ymax-ymin, 0, dest_width);
             dpy_gfx_update(s->con, 0, ymin, dest_width, ymax-ymin);
         }
     }
 }
 
-static void goldfish_fb_invalidate_display(void * opaque)
+static void goldfish_fbext_invalidate_display(void * opaque)
 {
     // is this called?
-    struct goldfish_fb_state *s = (struct goldfish_fb_state *)opaque;
+    struct goldfish_fbext_state *s = (struct goldfish_fbext_state *)opaque;
     s->need_update = 1;
 }
 
-static uint64_t goldfish_fb_read(void *opaque, hwaddr offset, unsigned size)
+static uint64_t goldfish_fbext_read(void *opaque, hwaddr offset, unsigned size)
 {
     uint64_t ret = 0;
-    struct goldfish_fb_state *s = opaque;
+    struct goldfish_fbext_state *s = opaque;
     DisplaySurface *ds = qemu_console_surface(s->con);
 
     if (!s_display_bpp) {
@@ -432,7 +430,7 @@ static uint64_t goldfish_fb_read(void *opaque, hwaddr offset, unsigned size)
                ret = HAL_PIXEL_FORMAT_RGB_565;
                break;
             default:
-               error_report("goldfish_fb_read: Bad display bit depth %d",
+               error_report("goldfish_fbext_read: Bad display bit depth %d",
                        s_display_bpp);
                break;
             }
@@ -440,21 +438,21 @@ static uint64_t goldfish_fb_read(void *opaque, hwaddr offset, unsigned size)
             break;
 
         default:
-            error_report("goldfish_fb_read: Bad offset 0x" TARGET_FMT_plx,
+            error_report("goldfish_fbext_read: Bad offset 0x" TARGET_FMT_plx,
                     offset);
             break;
     }
 
-    trace_goldfish_fb_memory_read(offset, ret);
+    trace_goldfish_fbext_memory_read(offset, ret);
     return ret;
 }
 
-static void goldfish_fb_write(void *opaque, hwaddr offset, uint64_t val,
+static void goldfish_fbext_write(void *opaque, hwaddr offset, uint64_t val,
         unsigned size)
 {
-    struct goldfish_fb_state *s = opaque;
+    struct goldfish_fbext_state *s = opaque;
 
-    trace_goldfish_fb_memory_write(offset, val);
+    trace_goldfish_fbext_memory_write(offset, val);
 
     switch(offset) {
         case FB_INT_ENABLE:
@@ -484,68 +482,69 @@ static void goldfish_fb_write(void *opaque, hwaddr offset, uint64_t val,
             s->need_update = 1;
             break;
         default:
-            error_report("goldfish_fb_write: Bad offset 0x" TARGET_FMT_plx,
+            error_report("goldfish_fbext_write: Bad offset 0x" TARGET_FMT_plx,
                     offset);
     }
 }
 
-static const MemoryRegionOps goldfish_fb_iomem_ops = {
-    .read = goldfish_fb_read,
-    .write = goldfish_fb_write,
+static const MemoryRegionOps goldfish_fbext_iomem_ops = {
+    .read = goldfish_fbext_read,
+    .write = goldfish_fbext_write,
     .endianness = DEVICE_NATIVE_ENDIAN,
     .impl.min_access_size = 4,
     .impl.max_access_size = 4,
 };
 
-static const GraphicHwOps goldfish_fb_ops = {
-    .invalidate = goldfish_fb_invalidate_display,
-    .gfx_update = goldfish_fb_update_display,
+static const GraphicHwOps goldfish_fbext_ops = {
+    .invalidate = goldfish_fbext_invalidate_display,
+    .gfx_update = goldfish_fbext_update_display,
 };
 
-static int goldfish_fb_init(SysBusDevice *sbdev)
+static int goldfish_fbext_init(SysBusDevice *sbdev)
 {
     DeviceState *dev = DEVICE(sbdev);
-    struct goldfish_fb_state *s = GOLDFISH_FB(dev);
+    struct goldfish_fbext_state *s = GOLDFISH_FBEXT(dev);
 
-    dev->id = g_strdup(TYPE_GOLDFISH_FB);
+    dev->id = g_strdup(TYPE_GOLDFISH_FBEXT);
 
     sysbus_init_irq(sbdev, &s->irq);
 
-    s->con = graphic_console_init(dev, 0, &goldfish_fb_ops, s);
+    s->con = graphic_console_init(dev, 1, &goldfish_fbext_ops, s);
+    // dpy_gfx_replace_surface(s->con, NULL);
 
     s->dpi = 165;  /* TODO: Find better way to get actual value ! */
 
     s->format = HAL_PIXEL_FORMAT_RGB_565;
 
-    memory_region_init_io(&s->iomem, OBJECT(s), &goldfish_fb_iomem_ops, s,
-            "goldfish_fb", 0x100);
+    memory_region_init_io(&s->iomem, OBJECT(s), &goldfish_fbext_iomem_ops, s,
+            "goldfish_fbext", 0x100);
     sysbus_init_mmio(sbdev, &s->iomem);
 
-    register_savevm(dev, "goldfish_fb", 0, GOLDFISH_FB_SAVE_VERSION,
-                     goldfish_fb_save, goldfish_fb_load, s);
+    register_savevm(dev, "goldfish_fbext", 0, GOLDFISH_FB_SAVE_VERSION,
+                     goldfish_fbext_save, goldfish_fbext_load, s);
 
     return 0;
 }
 
-static void goldfish_fb_class_init(ObjectClass *klass, void *data)
+static void goldfish_fbext_class_init(ObjectClass *klass, void *data)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
     SysBusDeviceClass *k = SYS_BUS_DEVICE_CLASS(klass);
 
-    k->init = goldfish_fb_init;
-    dc->desc = "goldfish framebuffer";
+    k->init = goldfish_fbext_init;
+    dc->desc = "goldfish external display framebuffer";
 }
 
-static const TypeInfo goldfish_fb_info = {
-    .name          = TYPE_GOLDFISH_FB,
+static const TypeInfo goldfish_fbext_info = {
+    .name          = TYPE_GOLDFISH_FBEXT,
     .parent        = TYPE_SYS_BUS_DEVICE,
-    .instance_size = sizeof(struct goldfish_fb_state),
-    .class_init    = goldfish_fb_class_init,
+    .instance_size = sizeof(struct goldfish_fbext_state),
+    .class_init    = goldfish_fbext_class_init,
 };
 
-static void goldfish_fb_register(void)
+static void goldfish_fbext_register(void)
 {
-    type_register_static(&goldfish_fb_info);
+    type_register_static(&goldfish_fbext_info);
 }
 
-type_init(goldfish_fb_register);
+type_init(goldfish_fbext_register);

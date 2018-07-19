@@ -126,6 +126,12 @@ goldfish_fb_memory_write(uint32_t addr, uint32_t value) "addr %08x value %08x"
 goldfish_fb_update_display(int y, int h, int x, int w) "y:%d,h:%d,x=%d,w=%d"
 goldfish_fb_update_stats(float peak, float total) "peak %.2f %%  total %.2f %%"
 
+# hw/display/goldfish_fbext.c
+goldfish_fbext_memory_read(uint32_t addr, uint32_t value) "addr %08x value %08x"
+goldfish_fbext_memory_write(uint32_t addr, uint32_t value) "addr %08x value %08x"
+goldfish_fbext_update_display(int y, int h, int x, int w) "y:%d,h:%d,x=%d,w=%d"
+goldfish_fbext_update_stats(float peak, float total) "peak %.2f %%  total %.2f %%"
+
 # hw/display/vga.c
 vga_std_read_io(uint32_t addr, uint32_t val) "addr 0x%x, val 0x%x"
 vga_std_write_io(uint32_t addr, uint32_t val) "addr 0x%x, val 0x%x"

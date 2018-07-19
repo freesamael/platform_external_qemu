@@ -62,4 +62,9 @@
 #define GOLDFISH_ROTARY_IOMEM_SIZE    0x00001000
 #define GOLDFISH_ROTARY_IRQ           23
 
+/* goldfish external display framebuffer */
+#define GOLDFISH_FBEXT_IOMEM_BASE     0xff018000
+#define GOLDFISH_FBEXT_IOMEM_SIZE     0x00000100
+#define GOLDFISH_FBEXT_IRQ            19
+
 #endif  /* !ACPI_GOLDFISH_DEFS_H */
